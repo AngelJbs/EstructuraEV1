@@ -1,0 +1,125 @@
+from collections import namedtuple
+import datetime
+
+# Esta tupla almacena los articulo que se van registrando
+Articulo = namedtuple("Articulo", "articulo descripcion_art cantidad_articulo precio_articulo monto_venta")
+# Esta tupla almacena un Recibo con los datos la tupla de Articulo
+Recibo = namedtuple("Recibo", "nombre fecha_str articulos total iva ")  
+# Este diccionario almacena las ventas
+ventas = {} 
+
+#Inicio del Menu
+while True:
+    print(">>>>>MENU<<<<<")
+    print("1.Registrar Servicio")
+    print("2.Consultar un Servicio")
+    print("3.Consultar Servicio por Fecha")
+    print("4.Salir")
+    opcion = int(input("Selecciona una Opcion : "))
+    print(("*"*20))
+    
+
+    if opcion == 1:
+        while True:
+            print("Ingrese Servicio")
+            folio = int(input("Ingrese el Folio: "))
+            if folio in ventas.keys():
+                print('Este folio ya existe, ingrese otro') 
+            else:
+                break
+        while True:
+            try:    
+                fecha_str = input("Fecha de la venta en formato (dd/mm/aaaa): ")
+                fecha = datetime.datetime.strptime(fecha_str, "%d/%m/%Y").date()#Esta funcion es utilizada para introducir la fecha
+            except ValueError: #Nos lanzara este mensaje cuando el formato sea incorrecto y nos regresara al inicio
+                print("Fecha incorrecta") 
+            except Exception:
+                print("Hay una Exepcion") 
+            else:       
+                break
+        nombre = (input("¿Cual es tu nombre?: ")) 
+        articulos = {} #Este diccionario almacena los articulos que se estaran agregando en cada venta por folio 
+        subtotal = 0
+        contador_articulo = 0 
+        
+        while True:
+            contador_articulo += 1
+            articulo = input('Cual es su articulo?: ')
+            descripcion_art = input('Que servicio desea?: ')
+            cantidad_articulo = int(input('Cuanto articulos son: '))
+            precio_articulo = float(input('Que costo tiene el Servicio: '))
+            monto_venta = cantidad_articulo * precio_articulo
+            #Se agrega los datos del articulo con un tuplanominada al diccionario articulos 
+            #con la variable contador_articulo para poder identificar cada articulo en la tupla
+            articulos[contador_articulo] = Articulo(articulo, descripcion_art, cantidad_articulo, precio_articulo, monto_venta)
+            subtotal += monto_venta
+            print("*"*20)
+            print(f"Hasta al momento esto es su subtotal: ${subtotal}")
+            print("*"*20)
+            respuesta = int(input("\nDesea agregar otro producto? 1[SI], 2[NO]: "))
+            print("*"*20)
+            if respuesta != 1:
+                print(f"N.De Folio: |{folio}|")
+                print(f'Cliente: {nombre}')
+                print(f'Fecha: {fecha_str}\n')
+                print(f'Articulos  | Descripciones | Cantidad')
+                articulo_ticket = articulos
+                for art in articulo_ticket.keys(): #Muestra los articulos por columnas
+                    print(f"{articulo_ticket[art].articulo} | {articulo_ticket[art].descripcion_art} |{articulo_ticket[art].cantidad_articulo} ")
+                print(f'Subtotal: ${subtotal}')
+                iva = (subtotal*0.16)
+                print(f'IVA(16%): ${iva}')
+                total = (iva + subtotal)
+                print(f'Total: ${total}')
+                print("*"*20)
+                #Agrega el Recibo al registro de las ventas         
+                ventas[folio] = Recibo(nombre ,fecha_str,articulos,total,iva)
+                ventas[fecha_str] = Recibo(nombre ,fecha_str,articulos,total,iva)
+                
+                print("*"*20)
+                break
+            
+    elif opcion == 2:
+        print("*"*20)
+        print("Consulta Por Folio")
+        folio_a_buscar = int(input("Ingresa N.De Folio: ")) 
+        print("*"*20)
+        if folio_a_buscar in ventas.keys(): #Buscara el folio en el diccionario de ventas 
+            print(f"\nTicket: |{folio_a_buscar}|") 
+            print(f"Cliente: {nombre}")
+            print(f'Fecha: {ventas[folio_a_buscar].fecha_str}\n')
+            print(f'Articulos')
+            articulo_recibo = ventas[folio_a_buscar].articulos #Acomodara los articulos en orden 
+            for art in articulo_recibo.keys():
+                print(f"{articulo_recibo[art].articulo} | {articulo_recibo[art].descripcion_art} |{articulo_recibo[art].cantidad_articulo} X ${articulo_recibo[art].precio_articulo} | ${articulo_recibo[art].monto_venta}")
+            print(f"IVA(16%): ${(ventas[folio_a_buscar].iva)}")
+            print(f'Total: ${ventas[folio_a_buscar].total}')
+            print("*"*20)
+        else:
+            print("*"*20)
+            print(f"Este numero de folio: {folio_a_buscar}, NO existe") #Dara este mensaje si no encuentra el folio
+            print("*"*20)
+            break
+         
+    elif opcion == 3:
+        print("*"*20)
+        print("Consulta Por Fecha")
+        fecha_a_buscar = str(input("Ingresa Fecha ")) 
+        print("*"*20)
+        if fecha_a_buscar in ventas.keys(): #Buscara la fecha en el diccionario de ventas 
+            print ("{:<8} {:<15} {:<10} {:<8} {:<15} {:<10} ".format('Folio','Cliente','Fecha','Articulo','Descrpcion','Cantidad'))
+            articulo_recibo = ventas[fecha_a_buscar].articulos #Acomodara los articulos en orden 
+            for art in articulo_recibo.keys():
+             print ("{:<8} {:<15} {:<10} {:<8} {:<15} {:<10} ".format
+            (f"\n|{folio}|", f"{nombre}", f'{ventas[fecha_a_buscar].fecha_str}', f"{articulo_recibo[art].articulo}", f" {articulo_recibo[art].descripcion_art} ",f"{articulo_recibo[art].cantidad_articulo} "))
+            print("*"*20)
+        else:
+            print("*"*20)
+            print(f"Esta fecha: {fecha_a_buscar}, NO existe") #Dara este mensaje si no encuentra la fecha
+            print("*"*20)
+            break              
+    elif opcion == 4:
+        print("Vuelva Pronto")
+        break
+    else:
+        print("ERROR")

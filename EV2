@@ -1,0 +1,144 @@
+import datetime
+import os
+import csv # Librería para el manejo de CSV
+import time
+import pandas as pd # Librería para el manejo de DATAFRAME
+SEPARADOR = "-" * 80
+
+folio=0 
+registro_serv_csv={}
+columnas=["Fecha", "Folio", "Nombre", "Descripcion Servicio", "Descripcion Equipo" , "Cantidad", "Subtotal", "Total"]
+#ESTA ESTRUCTURA GUARDA LOS DATOS
+
+
+def creacion_folio():
+    registro = open("folio.csv", "w")
+    registro.write(str(folio))
+
+try:
+    with open("folio.csv", "r") as archivo_csv:
+        lector = csv.reader(archivo_csv)
+        for folio_csv in lector:
+            folio_list = folio_csv
+except:
+    creacion_folio()
+
+with open("folio.csv", "r") as archivo_csv:
+  lector = csv.reader(archivo_csv)
+  for folio_csv in lector:
+      folio_list = folio_csv
+
+folio=int(folio_list[-1])      #DE ESTA MANERA SE IGUALARA LA VARIABLE VISTA PREVIAMENTE
+
+while True:
+    print("\n* * * M E N Ú * * * ") #MENU DE OPCIONES
+    print(SEPARADOR)
+    print("1. Registrar un servicio")
+    print("2. Consultar un servicio por folio")
+    print("3. Consultar un servicio por fecha")
+    print("4. Salir")
+    print(SEPARADOR)
+    opcion = input("Ingrese una opcion: ") 
+    
+    if opcion == '1':
+
+        folio=folio+1   
+        folio_list.append(folio)  #SE AGREGA EL NUMERO DE FOLIO
+        creacion_folio()
+                 
+        print(f" \n ********** FOLIO NUEVO: {folio} **********")
+
+        while True:           
+                print("\n ELIGE LA OPCION DE QUE NECESITES") #MENU PARA ELEGIR SERVICIOS
+                print("1. Instalacion SO") 
+                print("2. Limpieza de Electronicos") 
+                print("3. Instalacion de Programas") 
+                print("4. Formateo") 
+                print("5. Otros servicios")
+                opcion_servicio = int(input("\nQue otro servicio desea: "))       
+
+                if opcion_servicio == 1:
+                    descrip_servicio = " Instalacion SO"
+                elif opcion_servicio == 2:
+                    descrip_servicio = "Limpieza de Electronico"
+                elif opcion_servicio == 3:
+                    descrip_servicio = "Instalacion de Programa"
+                elif opcion_servicio == 4:
+                    descrip_servicio = "Formateo de equipo"
+                elif opcion_servicio == 5:
+                    descrip_servicio = input("Ingrese la descripción del servicio: ")
+                else:
+                    break
+                break
+        
+        while True:
+            #LISTAS DONDE SE AGREGARAN LOS DATOS INTRODUCIDOS
+            nombre_list=[]
+            descrip_serv_list=[]
+            descripcion_list=[]
+            cantidad_list=[]
+            precio_list=[]
+            fecha_list=[]
+            cargo_sin_iva=[]
+            
+            nombre=input("Nombre del cliente: ")
+            nombre_list.append(nombre)
+
+            descrip_serv_list.append(descrip_servicio)
+            
+            descripcion=input("Descripción del equipo: ")
+            descripcion_list.append(descripcion)
+            
+            cantidad=int(input("Cantidad de equipos a revisar: "))
+            cantidad_list.append(cantidad)
+            
+            precio=float(input("Cargo del servicio: "))
+            cargo = precio*cantidad
+            cargo_sin_iva.append(precio)    
+            iva=0.16
+            cargo_iva= cargo * iva
+            cargo_total = cargo + cargo_iva
+            precio_list.append(cargo_total)
+        
+            fecha = datetime.datetime.now()
+            fecha_hoy = fecha.strftime('%d/%m/%Y')
+            fecha_list.append(str(fecha_hoy))
+                        
+            registro_serv_csv["Folio"]=folio
+            registro_serv_csv["Nombre"]=nombre_list
+            registro_serv_csv["Descripcion Servicio"]=descrip_serv_list
+            registro_serv_csv["Descripcion Equipo"]=descripcion_list
+            registro_serv_csv["Cantidad"]=cantidad_list
+            registro_serv_csv["Precio sin IVA"]=cargo_sin_iva
+            registro_serv_csv["Monto total"]= precio_list
+            registro_serv_csv["Fecha"]=fecha_list
+
+            
+            DF_REPORTE_SERV=pd.DataFrame(registro_serv_csv) #DATAFRAME DE PANDAS A PYTHON
+            rute = "Datos.csv"
+            DF_REPORTE_SERV.to_csv(rute, index=None, mode="a", header=not os.path.isfile(rute))  #AUMENTA VALOR DE FOLIO 
+            
+
+            opcion_captura = input("\n¿Desea añadir mas productos? SI = 1, NO = 0: ")
+            if opcion_captura == "0":
+                print("Monto total: ",cargo_total)
+                break
+
+    elif opcion == '2':
+        print(SEPARADOR)
+        data = pd.read_csv('datos.csv')
+        df_datos_capturados = pd.DataFrame(data)
+        busqueda_folio=int(input("Folio del servicio a consultar: "))
+        folio_datos = df_datos_capturados[df_datos_capturados['Folio']==busqueda_folio] #BUSQUEDA POR FOLIO
+        print(folio_datos)
+        print(SEPARADOR)
+
+    elif opcion == '3':
+        print(SEPARADOR)
+        data = pd.read_csv('datos.csv')
+        df_datos_capturados = pd.DataFrame(data) #BUSQUEDA POR FECHA
+        print(df_datos_capturados)
+        print(SEPARADOR)
+
+    elif opcion=="4":
+        break
